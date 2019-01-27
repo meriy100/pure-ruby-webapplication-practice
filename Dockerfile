@@ -15,3 +15,5 @@ RUN \
   bundle config --global jobs 4 && \
   bundle install && \
   rm -rf ~/.gem
+
+CMD ["ruby", "app.rb"]
