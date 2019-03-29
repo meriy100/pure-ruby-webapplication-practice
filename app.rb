@@ -1,4 +1,5 @@
 require 'socket'
+require 'json'
 
 def headers(client)
   headers = []
@@ -10,18 +11,35 @@ def headers(client)
 end
 
 def response(client, headers)
-  client.puts "HTTP/2.0 200 OK"
-  client.puts "Content-Type: text/plain"
-  client.puts
-  routes = Routes.new
-  routes.get('/hello')
-  client.puts routes.match(headers.first)
+  case headers.first
+  when %r{^GET /book.json}
+    client.puts "HTTP/2.0 200 OK"
+    client.puts "Content-Type: application/json;"
+    client.puts "Access-Control-Allow-Origin: *"
+
+    client.puts
+    client.puts({ data: { name: 'elm が分かる本', author: 'わい' } }.to_json)
+  when %r{^GET /test.json}
+    client.puts "HTTP/2.0 200 OK"
+    client.puts "Content-Type: application/json;"
+    client.puts "Access-Control-Allow-Origin: *"
+
+    client.puts
+    client.puts File.read('./output.json')
+  when %r{^GET /}
+    client.puts "HTTP/2.0 200 OK"
+    client.puts "Content-Type: text/plain;"
+    client.puts "Access-Control-Allow-Origin: *"
+
+    client.puts
+    client.puts "hello"
+  end
   client.close
 end
 
 
 if $PROGRAM_NAME == __FILE__
-  server = TCPServer.new 3000
+  server = TCPServer.new 4000
 
   loop do
     Thread.start(server.accept) do |client|
